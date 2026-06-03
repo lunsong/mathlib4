@@ -134,6 +134,36 @@ theorem dcongr_heq.{u, v}
   cases hf rfl .rfl
   rfl
 
+theorem cast_apply_cast.{u, v}
+    {α₁ α₂ : Sort u}
+    {β₁ : α₁ → Sort v} {β₂ : α₂ → Sort v}
+    (hα : α₁ = α₂) (hβ : β₁ ≍ β₂)
+    (a : α₁) (f : ∀ a, β₁ a)
+    (h' : (∀ a, β₁ a) = (∀ a, β₂ a) := by cases hα; cases hβ; rfl) :
+    (cast h' f) (cast hα a) ≍ f a := by
+  apply dcongr_heq
+  · exact cast_heq hα a
+  · intro t₁ t₂ ht
+    cases ht
+    cases hβ
+    rfl
+  · intro _ _
+    exact cast_heq _ _
+    
+theorem cast_apply.{u, v}
+    {α₁ α₂ : Sort u}
+    {β₁ : α₁ → Sort v} {β₂ : α₂ → Sort v}
+    (hα : α₂ = α₁) (hβ : β₁ ≍ β₂)
+    (a : α₂) (f : ∀ a, β₁ a)
+    (h' : (∀ a, β₁ a) = (∀ a, β₂ a) := by cases hα; cases hβ; rfl) :
+    (cast h' f) a ≍ f (cast hα a) := by
+  have : (cast h' f) a ≍ (cast h' f) (cast hα.symm (cast hα a)) := by
+    apply congr_arg_heq
+    rw [cast_cast]
+    exact (cast_eq rfl a).symm
+  apply this.trans
+  exact cast_apply_cast hα.symm hβ _ _
+
 @[simp] theorem eq_iff_eq_cancel_left {b c : α} : (∀ {a}, a = b ↔ a = c) ↔ b = c :=
   ⟨fun h ↦ by rw [← h], fun h a ↦ by rw [h]⟩
 
